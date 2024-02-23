@@ -126,8 +126,9 @@ extension Location: Codable {
             let locations = try JSONDecoder().decode([Location].self, from: data)
             return locations
         } catch {
-            print("Error loading locations: \(error)")
-            return nil
+            saveLocations([])
+//            print("Error loading locations: \(error)")
+            return []
         }
     }
 
@@ -136,7 +137,20 @@ extension Location: Codable {
         try FileManager.default.url(for: .documentDirectory,
                                     in: .userDomainMask,
                                     appropriateFor: nil,
-                                    create: false)
+                                    create: true)
         .appendingPathComponent("locations.json")
+    }
+}
+
+extension CLLocationCoordinate2D {
+    /// Checks if two CLLocationCoordinate2D instances are nearly equal within a specified distance tolerance.
+    /// - Parameters:
+    ///   - coordinate: The coordinate to compare with.
+    ///   - tolerance: The maximum allowed distance in meters for the coordinates to be considered nearly equal. Default is 1 meter.
+    /// - Returns: `true` if the distance between the coordinates is less than or equal to the tolerance; otherwise, `false`.
+    func isNearlyEqual(to coordinate: CLLocationCoordinate2D, tolerance: CLLocationDistance = 1.0) -> Bool {
+        let location1 = CLLocation(latitude: self.latitude, longitude: self.longitude)
+        let location2 = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        return location1.distance(from: location2) <= tolerance
     }
 }

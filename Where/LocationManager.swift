@@ -8,6 +8,8 @@ import SwiftData
     var location: CLLocationCoordinate2D?
 //    @Query var locationList: LocationListModel
     let locationList: LocationListModel
+    var locationCount: Int = 0
+    var taskCount: Int = 0
 
     init(locations: [Location]? = nil) {
         let list: [Location]
@@ -46,8 +48,19 @@ import SwiftData
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         print("didUpdateLocations")
+        taskCount += 1
         if let location = locations.first {
+            var locationHasChanged = true
+            if let lastLocation = locationList.locations.last?.coordinate {
+                locationHasChanged = !location.coordinate.isNearlyEqual(to: lastLocation)
+            }
+            guard locationHasChanged else {
+                print("Location is the same as last recording, ignore.")
+                return
+            }
             locationList.append(Location(location))
+            locationCount += 1
+            print("Num locations stored \(locationList.locations.count)")
             //  TODO probably not efficient to save the list each time
             Location.saveLocations(locationList.locations)
         }
@@ -74,7 +87,7 @@ import SwiftData
     }
 }
 
-@Model
+//@Model
 class LocationListModel {
 
     private(set) var locations: [Location]
